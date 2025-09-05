@@ -1,7 +1,10 @@
-import Image from "next/image";
+import { SignInButton, UserButton } from '@clerk/nextjs';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <h1>Main Page</h1>
+    <>
+      <SignInButton />
+      <UserButton />
+    </>
   );
 }
