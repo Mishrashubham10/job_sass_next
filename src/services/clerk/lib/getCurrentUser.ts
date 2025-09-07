@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 
 // GET CURRENT USER
-export async function getCurrentUser({ allData = false }) {
+export async function getCurrentUser({ allData = false } = {}) {
   const { userId, redirectToSignIn } = await auth();
 
   return {

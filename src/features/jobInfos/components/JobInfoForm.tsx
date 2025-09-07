@@ -1,0 +1,172 @@
+'use client';
+
+import z from 'zod';
+import { jobInfoSchema } from '../schemas';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { experienceLabels, JobInfoTable } from '@/drizzle/schemas/jobInfo';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { formatExperienceLevel } from '../lib/formatters';
+import { LoadingSwap } from '@/components/ui/loading-swap';
+import { createJobInfo, updateJobInfo } from '../actions';
+import { toast } from 'sonner';
+
+type JobInfoFormData = z.infer<typeof jobInfoSchema>;
+
+export default function JobInfoForm({
+  jobInfo,
+}: {
+  jobInfo?: Pick<
+    typeof JobInfoTable.$inferSelect,
+    'id' | 'name' | 'title' | 'description' | 'experienceLabel'
+  >;
+}) {
+  const form = useForm<JobInfoFormData>({
+    resolver: zodResolver(jobInfoSchema),
+    defaultValues: {
+      name: '',
+      title: null,
+      description: '',
+      experienceLabel: 'junior',
+    },
+  });
+
+  // ON SUBMIT
+  async function onSubmit(values: JobInfoFormData) {
+    const action = jobInfo
+      ? updateJobInfo.bind(null, jobInfo.id)
+      : createJobInfo;
+    const res = await action(values);
+
+    if (res.error) {
+      toast.error(res.message);
+      console.log(res.message);
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* =========== NAME ========== */}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormDescription>
+                This name is displayed in the UI for easy identification.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          {/* =========== TITLE ========== */}
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Job Title</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Optional. Only enter if there is a specific job title you are
+                  applying for.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* =========== EXPERIENCE LEVEL ========== */}
+          <FormField
+            control={form.control}
+            name="experienceLabel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Experience Level</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {experienceLabels.map((level) => (
+                      <SelectItem key={level} value={level}>
+                        {formatExperienceLevel(level)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* =========== DESCRIPTION ========== */}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="A Next.js 15 and React 19 full stack web developer job that uses Drizzle ORM and Postgres for database management."
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Be as specific as possible. The more information you provide,
+                the better the interviews will be.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* =========== BUTTON ========== */}
+        <Button
+          disabled={form.formState.isSubmitting}
+          type="submit"
+          className="w-full"
+        >
+          <LoadingSwap isLoading={form.formState.isSubmitting}>
+            Save Job Information
+          </LoadingSwap>
+        </Button>
+      </form>
+    </Form>
+  );
+}

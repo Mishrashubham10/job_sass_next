@@ -1,5 +1,5 @@
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { AvatarFallback } from '@radix-ui/react-avatar';
-import { Avatar, AvatarImage } from './ui/avatar';
 import { ComponentProps } from 'react';
 
 export default function UserAvatar({
