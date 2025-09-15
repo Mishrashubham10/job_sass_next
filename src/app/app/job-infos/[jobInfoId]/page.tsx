@@ -135,6 +135,7 @@ export default async function JobInfoPage({
   );
 }
 
+// GET JOB INFO FROM DB
 async function getJobInfo(id: string, userId: string) {
   'use cache';
   cacheTag(getJobInfoIdTag(id));

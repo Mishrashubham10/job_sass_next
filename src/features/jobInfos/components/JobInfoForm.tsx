@@ -1,10 +1,14 @@
 'use client';
 
+// ============ OTHER IMPORTS =============
 import z from 'zod';
+import { experienceLabels, JobInfoTable } from '@/drizzle/schemas/jobInfo';
+import { createJobInfo, updateJobInfo } from '../actions';
 import { jobInfoSchema } from '../schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { experienceLabels, JobInfoTable } from '@/drizzle/schemas/jobInfo';
+
+// =========== SHADCN UI COMPONENTS ==============
 import {
   Form,
   FormControl,
@@ -22,12 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { formatExperienceLevel } from '../lib/formatters';
 import { LoadingSwap } from '@/components/ui/loading-swap';
-import { createJobInfo, updateJobInfo } from '../actions';
-import { toast } from 'sonner';
 
 type JobInfoFormData = z.infer<typeof jobInfoSchema>;
 
@@ -49,7 +52,7 @@ export default function JobInfoForm({
     },
   });
 
-  // ON SUBMIT
+  // ================ ON SUBMIT ================
   async function onSubmit(values: JobInfoFormData) {
     const action = jobInfo
       ? updateJobInfo.bind(null, jobInfo.id)
