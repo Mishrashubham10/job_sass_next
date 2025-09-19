@@ -1,7 +1,6 @@
 import UserAvatar from '@/features/users/components/UserAvatar';
 import { cn } from '@/lib/utils';
 import { BrainCircuitIcon } from 'lucide-react';
-import React from 'react';
 
 export default function CondenseMessages({
   messages,
@@ -17,7 +16,8 @@ export default function CondenseMessages({
   return (
     <div className={cn('flex flex-col gap-4 w-full', className)}>
       {messages.map((message, index) => {
-        const shouldAnimate = false;
+        const shouldAnimate = index === messages.length - 1 && maxFft > 0;
+
         return (
           <div
             key={index}
@@ -37,11 +37,16 @@ export default function CondenseMessages({
                   )}
                 />
                 <BrainCircuitIcon
-                  className="size-6 flex-shrink-0"
-                  style={shouldAnimate ? { scale: maxFft / 2 + 1 } : undefined}
+                  className="size-6 flex-shrink-0 relative"
+                  style={shouldAnimate ? { scale: maxFft / 8 + 1 } : undefined}
                 />
               </div>
             )}
+            <div className="flex flex-col gap-1">
+              {message.content.map((text, i) => (
+                <span key={i}>{text}</span>
+              ))}
+            </div>
           </div>
         );
       })}

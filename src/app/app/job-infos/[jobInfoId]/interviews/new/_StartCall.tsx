@@ -5,12 +5,13 @@ import { env } from '@/data/env/client';
 import { JobInfoTable } from '@/drizzle/schema';
 import CondenseMessages from '@/services/hume/components/CondenseMessages';
 import { condensedMessages } from '@/services/hume/lib/condensedMessages';
+// ========== HUME ============
 import { useVoice, VoiceReadyState } from '@humeai/voice-react';
+// ========== ICONS ===========
 import {
   Loader2Icon,
   MicIcon,
   MicOffIcon,
-  PhoneOff,
   PhoneOffIcon,
 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -80,7 +81,7 @@ function Messages({ user }: { user: { name: string; imageUrl: string } }) {
         return condensedMessages(messages)
     }, [messages])
 
-  return <CondenseMessages messages={condenseMessages} maxFft={Math.max(...fft)} className="max-w-5xl" />
+  return <CondenseMessages messages={condenseMessages} maxFft={Math.max(...fft)} user={user} className="max-w-5xl" />
 }
 
 // ============== CONTROLS ===============
