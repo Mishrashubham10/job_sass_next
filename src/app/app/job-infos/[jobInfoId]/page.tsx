@@ -49,7 +49,7 @@ const options = [
   },
 ];
 
-export default async function JobInfoPage({
+export default async function JobInfosPage({
   params,
 }: {
   params: Promise<{ jobInfoId: string }>;

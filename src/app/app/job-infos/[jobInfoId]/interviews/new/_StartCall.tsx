@@ -9,7 +9,7 @@ import {
 } from '@/features/interviews/actions';
 import { errorToast } from '@/lib/errorToast';
 import CondenseMessages from '@/services/hume/components/CondenseMessages';
-import { condensedMessages } from '@/services/hume/lib/condensedMessages';
+import { condenseChatMessages } from '@/services/hume/lib/condensedChatMessages';
 // ========== HUME ============
 import { useVoice, VoiceReadyState } from '@humeai/voice-react';
 // ========== ICONS ===========
@@ -127,7 +127,7 @@ function Messages({ user }: { user: { name: string; imageUrl: string } }) {
   const { messages, fft } = useVoice();
 
   const condenseMessages = useMemo(() => {
-    return condensedMessages(messages);
+    return condenseChatMessages(messages);
   }, [messages]);
 
   return (

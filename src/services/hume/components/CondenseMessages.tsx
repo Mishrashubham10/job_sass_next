@@ -11,7 +11,7 @@ export default function CondenseMessages({
   messages: { isUser: boolean; content: string[] }[];
   user: { name: string; imageUrl: string };
   className?: string;
-  maxFft: number;
+  maxFft?: number;
 }) {
   return (
     <div className={cn('flex flex-col gap-4 w-full', className)}>
