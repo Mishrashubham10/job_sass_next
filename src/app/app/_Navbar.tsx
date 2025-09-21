@@ -21,6 +21,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import UserAvatar from '@/features/users/components/UserAvatar';
 
+// NAVLINKS
 const navLinks = [
   { name: 'Interviews', href: 'interviews', Icon: SpeechIcon },
   { name: 'Questions', href: 'questions', Icon: BookOpenIcon },

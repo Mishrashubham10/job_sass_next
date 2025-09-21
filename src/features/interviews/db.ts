@@ -17,7 +17,7 @@ export async function insertInterview(
   return newInterview;
 }
 
-// =========== CREATE INTERVIEW ===========
+// =========== UPDATE INTERVIEW ===========
 export async function updateInterview(
   id: string,
   interview: Partial<typeof InterviewTable.$inferInsert>

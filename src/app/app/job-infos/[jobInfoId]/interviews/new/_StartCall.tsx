@@ -3,18 +3,19 @@
 import { Button } from '@/components/ui/button';
 import { env } from '@/data/env/client';
 import { JobInfoTable } from '@/drizzle/schema';
+import {
+  createInterview,
+  updateInterview,
+} from '@/features/interviews/actions';
+import { errorToast } from '@/lib/errorToast';
 import CondenseMessages from '@/services/hume/components/CondenseMessages';
 import { condensedMessages } from '@/services/hume/lib/condensedMessages';
 // ========== HUME ============
 import { useVoice, VoiceReadyState } from '@humeai/voice-react';
 // ========== ICONS ===========
-import {
-  Loader2Icon,
-  MicIcon,
-  MicOffIcon,
-  PhoneOffIcon,
-} from 'lucide-react';
-import { useMemo } from 'react';
+import { Loader2Icon, MicIcon, MicOffIcon, PhoneOffIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export default function StartCall({
   jobInfo,
@@ -31,37 +32,85 @@ export default function StartCall({
     imageUrl: string;
   };
 }) {
-  const { connect, readyState } = useVoice();
+  const router = useRouter();
+  const { connect, readyState, chatMetadata, callDurationTimestamp } =
+    useVoice();
+  const [interviewId, setInterviewId] = useState<string | null>(null);
+  const durationRef = useRef(callDurationTimestamp);
+  durationRef.current = callDurationTimestamp;
 
-    if (readyState === VoiceReadyState.IDLE) {
-      return (
-        <div className="flex justify-center items-center h-screen-header">
-          <Button
-            size="lg"
-            onClick={async () => {
-              // CREATE INTERVIEW
-              connect({
-                auth: { type: 'accessToken', value: accessToken },
-                configId: env.NEXT_PUBLIC_HUME_CONFIG_ID,
-              });
-            }}
-          >
-            Start Interview
-          </Button>
-        </div>
-      );
+  // SYNC CHAT ID
+  useEffect(() => {
+    if (chatMetadata?.chatId == null || interviewId == null) {
+      return;
+    }
+    updateInterview(interviewId, { humeChatId: chatMetadata.chatId });
+  }, [chatMetadata?.chatId, interviewId]);
+
+  // SYNC DURATION
+  useEffect(() => {
+    if (interviewId == null) return;
+    const intervalId = setInterval(() => {
+      if (durationRef.current == null) return;
+
+      updateInterview(interviewId, { duration: durationRef.current });
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, [interviewId]);
+
+  // HANDLE DISCONNECT
+  useEffect(() => {
+    if (readyState !== VoiceReadyState.CLOSED) return;
+    if (interviewId == null) {
+      return router.push(`/app/job-infos/${jobInfo.id}/interviews`);
     }
 
-    if (
-      readyState === VoiceReadyState.CONNECTING ||
-      readyState === VoiceReadyState.CLOSED
-    ) {
-      return (
-        <div className="h-screen-header flex items-center justify-center">
-          <Loader2Icon className="animate-spin size-24" />
-        </div>
-      );
+    if (durationRef.current != null) {
+      updateInterview(interviewId, { duration: durationRef.current });
     }
+
+    router.push(`/app/job-infos/${jobInfo.id}/interviews/${interviewId}`);
+  }, [interviewId, readyState, router, jobInfo.id]);
+
+  if (readyState === VoiceReadyState.IDLE) {
+    return (
+      <div className="flex justify-center items-center h-screen-header">
+        <Button
+          size="lg"
+          onClick={async () => {
+            // CREATE INTERVIEW
+            if (!jobInfo.id) {
+              throw new Error('jobInfoId is undefined');
+            }
+            const res = await createInterview({ jobInfoId: jobInfo.id });
+            if (res.error) {
+              return errorToast(res.message);
+            }
+            setInterviewId(res.id);
+
+            connect({
+              auth: { type: 'accessToken', value: accessToken },
+              configId: env.NEXT_PUBLIC_HUME_CONFIG_ID,
+            });
+          }}
+        >
+          Start Interview
+        </Button>
+      </div>
+    );
+  }
+
+  if (
+    readyState === VoiceReadyState.CONNECTING ||
+    readyState === VoiceReadyState.CLOSED
+  ) {
+    return (
+      <div className="h-screen-header flex items-center justify-center">
+        <Loader2Icon className="animate-spin size-24" />
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-y-auto h-screen-header flex flex-col-reverse">
@@ -75,13 +124,20 @@ export default function StartCall({
 
 // ============= MESSAGES ==============
 function Messages({ user }: { user: { name: string; imageUrl: string } }) {
-    const {messages, fft} = useVoice()
+  const { messages, fft } = useVoice();
 
-    const condenseMessages = useMemo(()=>{
-        return condensedMessages(messages)
-    }, [messages])
+  const condenseMessages = useMemo(() => {
+    return condensedMessages(messages);
+  }, [messages]);
 
-  return <CondenseMessages messages={condenseMessages} maxFft={Math.max(...fft)} user={user} className="max-w-5xl" />
+  return (
+    <CondenseMessages
+      messages={condenseMessages}
+      maxFft={Math.max(...fft)}
+      user={user}
+      className="max-w-5xl"
+    />
+  );
 }
 
 // ============== CONTROLS ===============
