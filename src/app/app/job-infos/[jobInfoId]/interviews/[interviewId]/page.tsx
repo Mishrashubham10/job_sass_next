@@ -30,6 +30,8 @@ import { Loader2Icon } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import MarkdownRenderer from '@/components/MarkdownRender';
+import { ActionButton } from '@/components/ui/action-button';
+import { generateInterviewFeedback } from '@/features/interviews/actions';
 
 export default async function InterviewPage({
   params,
@@ -78,12 +80,11 @@ export default async function InterviewPage({
             result={(i) =>
               i.feedback == null ? (
                 // TODO: FEEDBACK
-                null
-                // <ActionButton
-                //   action={generateInterviewFeedback.bind(null, i.id)}
-                // >
-                //   Generate Feedback
-                // </ActionButton>
+                <ActionButton
+                  action={generateInterviewFeedback.bind(null, i.id)}
+                >
+                  Generate Feedback
+                </ActionButton>
               ) : (
                 <Dialog>
                   <DialogTrigger asChild>

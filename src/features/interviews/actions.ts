@@ -9,7 +9,24 @@ import { InterviewTable, JobInfoTable } from '@/drizzle/schema';
 import { getInterviewIdTag } from './dbCache';
 import { insertInterview, updateInterview as updateInterviewDb } from './db';
 import { canCreateInterview } from './permissions';
-import { PLAN_LIMIT_MESSAGE } from '@/lib/errorToast';
+import { PLAN_LIMIT_MESSAGE, RATE_LIMIT_MESSAGE } from '@/lib/errorToast';
+import arcjet, { request, tokenBucket } from '@arcjet/next';
+import { env } from '@/data/env/server';
+import { generateAiInterviewFeedback } from '@/services/ai/interviews';
+
+// ========== ARCJET FOR RATE LIMITING ==========
+const aj = arcjet({
+  characteristics: ['userId'],
+  key: env.ARCJET_KEY,
+  rules: [
+    tokenBucket({
+      capacity: 12,
+      refillRate: 4,
+      interval: '1d',
+      mode: 'LIVE',
+    }),
+  ],
+});
 
 // =========== CREATE INTERVIEW ==========
 export async function createInterview({
@@ -36,10 +53,23 @@ export async function createInterview({
     return {
       error: true,
       message: PLAN_LIMIT_MESSAGE,
-    }
+    };
   }
 
   // ============= TODO: RATE LIMIT =============
+  const decesion = await aj.protect(await request(), {
+    userId,
+    requested: 1,
+  });
+
+  // CHECKING IF DECESION DENIED
+  if (decesion.isDenied()) {
+    return {
+      error: true,
+      message: RATE_LIMIT_MESSAGE,
+    };
+  }
+
   // ============= CHECK JOB INFO =============
   const jobInfo = await getJobInfo(jobInfoId, userId);
   if (jobInfo == null) {
@@ -84,6 +114,49 @@ export async function updateInterview(
   return { error: false };
 }
 
+// =========== GENERATE FEEDBACK ============
+export async function generateInterviewFeedback(interviewId: string) {
+  const { userId, user } = await getCurrentUser({ allData: true });
+  if (userId == null || user == null) {
+    return {
+      error: true,
+      message: "You don't have permission to do this",
+    };
+  }
+
+  const interview = await getInterview(interviewId, userId);
+  if (interview == null) {
+    return {
+      error: true,
+      message: "You don't have permission to do this",
+    };
+  }
+
+  if (interview.humeChatId == null) {
+    return {
+      error: true,
+      message: "You don't have permission to do this",
+    };
+  }
+
+  const feedback = await generateAiInterviewFeedback({
+    humeChatId: interview.humeChatId,
+    jobInfo: interview.jobInfo,
+    userName: user.name,
+  });
+
+  if (feedback == null) {
+    return {
+      error: true,
+      message: 'Failed to generate feedback',
+    };
+  }
+
+  await updateInterviewDb(interviewId, { feedback });
+
+  return { error: false };
+}
+
 // =========== GET JOBINFO ==========
 async function getJobInfo(id: string, userId: string) {
   'use cache';
@@ -106,6 +179,9 @@ async function getInterview(id: string, userId: string) {
         columns: {
           id: true,
           userId: true,
+          description: true,
+          title: true,
+          experienceLabel: true
         },
       },
     },
