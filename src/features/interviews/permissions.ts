@@ -1,7 +1,7 @@
 import { db } from '@/drizzle/db';
 import { InterviewTable, JobInfoTable } from '@/drizzle/schema';
 import { getCurrentUser } from '@/services/clerk/lib/getCurrentUser';
-import { hasPermission } from '@/services/hume/lib/hasPermission';
+import { hasPermission } from '@/services/clerk/lib/hasPermission';
 import { and, count, eq, isNotNull } from 'drizzle-orm';
 
 // ============ CAN CREATE INTERVIEW ==============
