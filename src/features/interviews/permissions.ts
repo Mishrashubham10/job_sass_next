@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/services/clerk/lib/getCurrentUser';
 import { hasPermission } from '@/services/clerk/lib/hasPermission';
 import { and, count, eq, isNotNull } from 'drizzle-orm';
 
-// ============ CAN CREATE INTERVIEW ==============
+// ============ CAN CREATE INTERVIEW ============
 export async function canCreateInterview() {
   return await Promise.any([
     hasPermission('unlimited_interviews').then(
@@ -19,7 +19,7 @@ export async function canCreateInterview() {
   ]).catch(() => false);
 }
 
-// ========= GET USER INTERVIEW COUNT ===========
+// ============ GET USER INTERVIEW COUNT ============
 async function getUserInterviewCount() {
   const { userId } = await getCurrentUser();
   if (userId == null) return 0;
@@ -27,7 +27,7 @@ async function getUserInterviewCount() {
   return getInterviewCount(userId);
 }
 
-// ========= GET INTERVIEW COUNT ===========
+// ============ GET INTERVIEW COUNT ============
 async function getInterviewCount(userId: string) {
   const [{ count: c }] = await db
     .select({ count: count() })

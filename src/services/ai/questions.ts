@@ -6,6 +6,7 @@ import {
 import { CoreMessage, streamText } from 'ai';
 import { google } from './models/google';
 
+// ========== GENERATE QUESTIONS =============
 export function generateAiQuestion({
   jobInfo,
   previousQuestions,
@@ -14,7 +15,7 @@ export function generateAiQuestion({
 }: {
   jobInfo: Pick<
     typeof JobInfoTable.$inferSelect,
-    'title' | 'description' | 'experienceLevel'
+    'title' | 'description' | 'experienceLabel'
   >;
   previousQuestions: Pick<
     typeof QuestionTable.$inferSelect,
@@ -47,7 +48,7 @@ export function generateAiQuestion({
 
 Job Information:
 - Job Description: \`${jobInfo.description}\`
-- Experience Level: \`${jobInfo.experienceLevel}\`
+- Experience Level: \`${jobInfo.experienceLabel}\`
 ${jobInfo.title ? `\n- Job Title: \`${jobInfo.title}\`` : ''}
 
 Guidelines:
@@ -63,6 +64,7 @@ Guidelines:
   });
 }
 
+// ========== GENERATE FEEDBACKS =============
 export function generateAiQuestionFeedback({
   question,
   answer,

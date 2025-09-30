@@ -35,7 +35,7 @@ async function SuspendedComponent({ jobInfoId }: { jobInfoId: string }) {
   if (userId == null) return redirectToSignIn();
 
   // ========= QUESTION:TODO ===========
-  // if (!(await canCreateQuestion())) return redirect('/app/upgrade');
+  if (!(await canCreateQuestion())) return redirect('/app/upgrade');
 
   const jobInfo = await getJobInfo(jobInfoId, userId);
   if (jobInfo == null) return notFound();

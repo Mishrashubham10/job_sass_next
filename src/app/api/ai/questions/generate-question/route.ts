@@ -53,7 +53,11 @@ export async function POST(req: Request) {
     execute: async (dataStream) => {
       const res = generateAiQuestion({
         previousQuestions,
-        jobInfo,
+        jobInfo: {
+          title: jobInfo.title,
+          description: jobInfo.description,
+          experienceLabel: jobInfo.experienceLabel,
+        },
         difficulty,
         onFinish: async (question) => {
           const { id } = await insertQuestion({
