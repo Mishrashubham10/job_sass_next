@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/services/clerk/lib/getCurrentUser';
 import { hasPermission } from '@/services/clerk/lib/hasPermission';
 import { count, eq } from 'drizzle-orm';
 
+// ============ CAN CREATE QUESTION ============
 export async function canCreateQuestion() {
   return await Promise.any([
     hasPermission('unlimited_questions').then(
@@ -18,6 +19,7 @@ export async function canCreateQuestion() {
   ]).catch(() => false);
 }
 
+// ============ GET USER QUESTION COUNT ============
 async function getUserQuestionCount() {
   const { userId } = await getCurrentUser();
   if (userId == null) return 0;
@@ -25,6 +27,7 @@ async function getUserQuestionCount() {
   return getQuestionCount(userId);
 }
 
+// ============ GET QUESTION COUNT ============
 async function getQuestionCount(userId: string) {
   const [{ count: c }] = await db
     .select({ count: count() })

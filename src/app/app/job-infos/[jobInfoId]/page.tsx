@@ -1,5 +1,6 @@
-// =========== CLIENT RELATED STUFF ==========
 import BackLink from '@/components/BackLink';
+import Skeleton from '@/components/Skeleton';
+import SuspendedItem from '@/components/SuspendedItem';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -8,32 +9,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRightIcon } from 'lucide-react';
-
-// ======= SERVER RELATED STUFF ========
 import { db } from '@/drizzle/db';
 import { JobInfoTable } from '@/drizzle/schema';
 import { getJobInfoIdTag } from '@/features/jobInfos/dbCache';
 import { formatExperienceLevel } from '@/features/jobInfos/lib/formatters';
+import { getCurrentUser } from '@/services/clerk/lib/getCurrentUser';
+import { and, eq } from 'drizzle-orm';
+import { ArrowRightIcon } from 'lucide-react';
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import Link from 'next/link';
-import { and, eq } from 'drizzle-orm';
-import { getCurrentUser } from '@/services/clerk/lib/getCurrentUser';
 import { notFound } from 'next/navigation';
-import SuspendedItem from '@/components/SuspendedItem';
-import Skeleton from '@/components/Skeleton';
 
-// OPTIONS
 const options = [
   {
-    label: 'Answer Techincal Questions',
+    label: 'Answer Technical Questions',
     description:
       'Challenge yourself with practice questions tailored to your job description.',
     href: 'questions',
   },
   {
     label: 'Practice Interviewing',
-    description: 'Simulate a real interview with AI-powered interviews.',
+    description: 'Simulate a real interview with AI-powered mock interviews.',
     href: 'interviews',
   },
   {
@@ -44,23 +40,25 @@ const options = [
   },
   {
     label: 'Update Job Description',
-    description: 'This should only be used for minor updates',
+    description: 'This should only be used for minor updates.',
     href: 'edit',
   },
 ];
 
-export default async function JobInfosPage({
+export default async function JobInfoPage({
   params,
 }: {
   params: Promise<{ jobInfoId: string }>;
 }) {
   const { jobInfoId } = await params;
+
   const jobInfo = getCurrentUser().then(
     async ({ userId, redirectToSignIn }) => {
       if (userId == null) return redirectToSignIn();
-      const jobInfo = await getJobInfo(jobInfoId, userId);
 
+      const jobInfo = await getJobInfo(jobInfoId, userId);
       if (jobInfo == null) return notFound();
+
       return jobInfo;
     }
   );
@@ -69,10 +67,8 @@ export default async function JobInfosPage({
     <div className="container my-4 space-y-4">
       <BackLink href="/app">Dashboard</BackLink>
 
-      {/* ======== JOB RELATED INFORMATION ========== */}
       <div className="space-y-6">
         <header className="space-y-4">
-          {/* HEADING */}
           <div className="space-y-2">
             <h1 className="text-3xl md:text-4xl">
               <SuspendedItem
@@ -110,7 +106,7 @@ export default async function JobInfosPage({
             />
           </p>
         </header>
-        {/* ============= GRID ============ */}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 has-hover:*:not-hover:opacity-70">
           {options.map((option) => (
             <Link
@@ -135,7 +131,7 @@ export default async function JobInfosPage({
   );
 }
 
-// GET JOB INFO FROM DB
+// ========= GET JOB INFO =========
 async function getJobInfo(id: string, userId: string) {
   'use cache';
   cacheTag(getJobInfoIdTag(id));
