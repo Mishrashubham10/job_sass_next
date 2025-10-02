@@ -8,7 +8,7 @@ import { Loader2Icon } from 'lucide-react';
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import NewQuestionClientPage from './_NewQuestionClientPage';
+import { NewQuestionClientPage } from './_NewQuestionClientPage';
 
 export default async function QuestionsPage({
   params,
@@ -34,7 +34,6 @@ async function SuspendedComponent({ jobInfoId }: { jobInfoId: string }) {
   const { userId, redirectToSignIn } = await getCurrentUser();
   if (userId == null) return redirectToSignIn();
 
-  // ========= QUESTION:TODO ===========
   if (!(await canCreateQuestion())) return redirect('/app/upgrade');
 
   const jobInfo = await getJobInfo(jobInfoId, userId);
